@@ -22,13 +22,23 @@ class StatController{
             sequelize.query(`select count(*) as cnt from tweets`,{type: QueryTypes.SELECT}),
             sequelize.query(`select count(*) as cnt from tweet_users`,{type: QueryTypes.SELECT}),
             sequelize.query(`select count(*) as cnt from tweet_entities`,{type: QueryTypes.SELECT}),
-            sequelize.query(`select count(*) as cnt from entities`,{type: QueryTypes.SELECT})
+            sequelize.query(`select count(*) as cnt from entities`,{type: QueryTypes.SELECT}),
+            sequelize.query(`SELECT date,count FROM statistic where typeId=1`,{type: QueryTypes.SELECT}),
+
         ])
         //let result2 = await Promise.all([tweets,persons,entities])
         //result = {persons: personsCnt.cnt,tweets: tweetsCnt.cnt, entities: entitiesCnt.cnt}
         //console.log(result)
         //console.log({tweets: result[0][0].cnt, persons: result[1].cnt, entities: result[2].cnt})
-        return res.json({tweets: result[0][0].cnt, persons: result[1][0].cnt, tweetEntities: result[2][0].cnt,entities: result[3][0].cnt})
+        return res.json({
+            tweets: result[0][0].cnt,
+            persons: result[1][0].cnt,
+            tweetEntities: result[2][0].cnt,
+            entities: result[3][0].cnt,
+            timeFrames: {
+                tweets: Object.keys(result[4]).map(k => {return [result[4][k].date,result[4][k].count]})
+            }
+        })
     }
     async getAllTypes(req,res){
         let {searchType, name} = req.query

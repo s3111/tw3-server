@@ -54,7 +54,7 @@ const Bot = sequelize.define('Bots',{
     paranoid: true,
     deletedAt: 'deleted_at'
 })
-
+/*
 const BotLog = sequelize.define('Bots_log',{
         id: {type: DataTypes.INTEGER,primaryKey: true, autoIncrement: true},
         bot_id: {type: DataTypes.INTEGER,allowNull:false,defaultValue:0},
@@ -65,7 +65,7 @@ const BotLog = sequelize.define('Bots_log',{
         event_status: {type: DataTypes.INTEGER,allowNull:false,defaultValue:0},
 },{ timestamps: false, tableName: 'Bots_log' }
 )
-
+*/
 const Payment = sequelize.define('user_payment',{
     id: {type: DataTypes.INTEGER,primaryKey: true, autoIncrement: true},
     email: {type: DataTypes.STRING},
