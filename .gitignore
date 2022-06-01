@@ -1,0 +1,6 @@
+/.env
+/.idea
+/node_modules
+/test
+/package-lock.json
+/forum_news.json
