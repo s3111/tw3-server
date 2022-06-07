@@ -56,51 +56,25 @@ left join entities b on a.id = b.id  `,
             let cnt = 0
             if (name && name !== 'All'){
                 let r = await Promise.all([
-                    /*
-                    sequelize.query(`SELECT a.entityId as id,b.entity as name,b.type, count(a.entityId) as count
-                        FROM twitter.tweet_entities a, entities b
-                        where a.entityId = b.id and b.type = ?
-                        group by a.entityId
-                        order by count desc
+                    sequelize.query(`SELECT a.id,a.type,a.entity as name,a.cnt as count, b.name as typeName FROM entities a
+                        left join entities_types b on a.type = b.type
+                        where a.type = ? and a.show_list=1 and a.cnt>15 order by a.cnt desc
                         limit ${limit} offset ${offset}`,
                         {type: QueryTypes.SELECT, replacements: [name],}),
-
-                     */
-                    sequelize.query(`SELECT id,type,entity as name,cnt as count FROM entities
-                        where type = ? and show_list=1 and cnt>15 order by cnt desc limit ${limit} offset ${offset}`,
-                        {type: QueryTypes.SELECT, replacements: [name],}),
-                    /*
-                    sequelize.query(`select count(*) as cnt from (
-                            SELECT b.id FROM twitter.tweet_entities a, twitter.entities b
-                            where a.entityId = b.id and b.type = ? group by b.id) x`,{type: QueryTypes.SELECT,
-                            replacements: [name],})
-                    */
                     sequelize.query(`SELECT count(*) as cnt FROM entities where type = ? and show_list=1 
                         and cnt is not null and cnt>15`,{type: QueryTypes.SELECT, replacements: [name],})
                 ])
                 result = {rows:r[0],count:r[1][0].cnt}
             }else{
                 let r = await Promise.all([
-                    sequelize.query(`SELECT id,type,entity as name,cnt as count FROM entities
-                        where show_list=1 and cnt>15  order by cnt desc limit ${limit} offset ${offset}`,
-                        {type: QueryTypes.SELECT}),
-                    sequelize.query(`SELECT count(*) as cnt FROM entities where show_list=1 and cnt>15 
-                        and cnt is not null`,{type: QueryTypes.SELECT})
-                    /*
-                    sequelize.query(`SELECT a.entityId as id,b.entity as name,b.type, count(a.entityId) as count
-                        FROM twitter.tweet_entities a, entities b
-                        where a.entityId = b.id
-                        group by a.entityId
-                        order by count desc
+                    sequelize.query(`SELECT a.id,a.type,a.entity as name,a.cnt as count, b.name as typeName FROM entities a
+                        left join entities_types b on a.type = b.type
+                        where a.show_list=1 and a.cnt>15 and b.show=1 order by a.cnt desc
                         limit ${limit} offset ${offset}`,
-                    { type: QueryTypes.SELECT }),
-                    sequelize.query(`select count(*) as cnt from (
-                        SELECT b.id FROM twitter.tweet_entities a, twitter.entities b
-                        where a.entityId = b.id
-                        group by b.id) x`,
-                    {type: QueryTypes.SELECT})
-
-                    */
+                        {type: QueryTypes.SELECT}),
+                    sequelize.query(`SELECT count(*) as cnt FROM entities a
+                    inner join entities_types b on a.type = b.type
+                    where show_list=1 and cnt>15 and b.show=1 and cnt is not null`,{type: QueryTypes.SELECT})
                 ])
                 result = {rows:r[0],count:r[1][0].cnt}
             }
@@ -114,8 +88,6 @@ left join entities b on a.id = b.id  `,
         let entitiesTypes = {}
         let limit = 30
         if (searchType === 'All'){
-            //entitiesTypes = await sequelize.query("SELECT `type` as `name`, count(`type`) as `count` FROM twitter.entities group by `type` order by count desc limit 30",                { type: QueryTypes.SELECT })
-            //entitiesTypes = await sequelize.query("SELECT @s:=@s+1 as id,`type` as `name`, count(`type`) as `count` FROM twitter.entities ,(SELECT @s:= 0) AS s group by `type` order by count desc",                { type: QueryTypes.SELECT })
             entitiesTypes = await sequelize.query("SELECT * FROM twitter.entities_types where `show`=1 order by count desc", { type: QueryTypes.SELECT })
         }
         else if (searchType === 'One' && name) {
