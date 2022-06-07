@@ -43,14 +43,15 @@ class StatController{
         let rows = await sequelize.query(`SELECT a.id,a.entityId,b.entity,b.type,a.countTotal,a.countCurrent,a.countTweets,date_format(date,"%Y-%m-%d") as date
 FROM statistic_entities a
 left join entities b on a.entityId = b.id
-where entityId in (select a.entityId from
+where date >= date_add(now(), interval -10 day) and
+entityId in (select a.entityId from
 (SELECT entityId,max(date) as max_date, round(avg(entityWeight)) as avgWeight
 FROM statistic_entities
 where date >= date_add(now(), interval -10 day)
 group by entityId) as a
 inner join statistic_entities b on a.entityId = b.entityId and a.max_date=b.date
-where entityWeight/avgWeight > 1.2 and max_date >= date_add(now(), interval -2 day))
-`,{type: QueryTypes.SELECT})
+where entityWeight/avgWeight > 1.2 
+and max_date >= date_add(now(), interval -2 day))`,{type: QueryTypes.SELECT})
 
         let types = {}
         //let names={}
