@@ -71,16 +71,16 @@ class StatController {
     }
     async getTopEntities(req, res) {
         let {searchType, name, page, limit} = req.query
-        let rows = await sequelize.query(`select a.entityId, a.avgWeight, b.entityWeight, b.entityWeight/a.avgWeight as weightIndex, c.entity, c.type from
-            (SELECT entityId,max(date) as max_date, round(avg(entityWeight)) as avgWeight
+        let rows = await sequelize.query(`select a.entityId, a.avgWeight, a.countCurrent, b.entityWeight, b.entityWeight/a.avgWeight as weightIndex, c.entity, c.type from
+            (SELECT entityId,max(date) as max_date, round(avg(entityWeight)) as avgWeight,countCurrent
             FROM statistic_entities
             where date >= date_add(now(), interval -10 day)
             group by entityId) as a
             inner join statistic_entities b on a.entityId = b.entityId and a.max_date=b.date
             inner join entities c on a.entityId = c.id
-            where entityWeight/avgWeight > 1.2 
+            where entityWeight/avgWeight > 1.3 
             and max_date >= date_add(now(), interval -2 day)
-            order by weightIndex desc limit 15`, {type: QueryTypes.SELECT})
+            order by countCurrent desc limit 10`, {type: QueryTypes.SELECT})
         return res.json(rows)
     }
 }
