@@ -1,5 +1,3 @@
-
-//require ('dotenv').config()
 const {Sequelize} = require('sequelize')
 
 module.exports = new Sequelize(
@@ -10,10 +8,5 @@ module.exports = new Sequelize(
         dialect: process.env.DB_ENGINE,
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
-        /*
-        define: {
-            timestamps: false
-        }
-        */
     }
 )

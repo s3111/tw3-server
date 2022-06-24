@@ -1,60 +1,27 @@
-const {Tweet, Entity} = require('../models/models')
-const ApiError = require('../error/apiError')
-const moment = require('moment')
-const { Op, QueryTypes } = require('sequelize')
+const {QueryTypes} = require('sequelize')
 const sequelize = require('../db')
 
-class EntityController{
-    async getAll(req,res){
-        let {searchType, name,page,limit} = req.query
+class EntityController {
+    async getAll(req, res) {
+        let {searchType, name, page, limit} = req.query
         let entities = {}
         let result
-        if(!limit) limit = 30
-        if (searchType === 'Bar'){
-            /*
-            entities = await sequelize.query(`select a.*,b.type,b.entity as name from (
-SELECT entityId as id,count(entityId) cnt
-FROM tweet_entities
-group by entityId
-order by cnt desc
-limit 30
-) a
-left join entities b on a.id = b.id  `,
-                { type: QueryTypes.SELECT })
-
-             */
+        if (!limit) limit = 30
+        if (searchType === 'Bar') {
             entities = await sequelize.query(`SELECT id,type,entity as name,cnt FROM entities
-                where show_bar=1 order by cnt desc limit 30`,{ type: QueryTypes.SELECT })
-
+                where show_bar=1 order by cnt desc limit 30`, {type: QueryTypes.SELECT})
             result = entities
-        }
-        else if (searchType === 'One' && name) {
+        } else if (searchType === 'One' && name) {
             console.log('need one entity', name)
-            /*
-            entities = await sequelize.query(`
-                SELECT a.entityId as id,b.entity as name,b.type, count(a.entityId) as count
-                    FROM twitter.tweet_entities a, entities b
-                    where a.entityId = b.id and b.entity = ?
-                    group by a.entityId
-                    order by count desc
-                    limit 1`,
-                {
-                    replacements: [name],
-                    type: QueryTypes.SELECT
-                })
-
-             */
             entities = await sequelize.query(`SELECT id,type,entity as name,cnt as count FROM entities
                 where entity = ? order by cnt desc limit 1`, {replacements: [name], type: QueryTypes.SELECT})
-
             result = entities
-        }
-        else if (searchType === 'List'){
+        } else if (searchType === 'List') {
             page = parseInt(page) || 1
             limit = parseInt(limit) || 20
             let offset = page * limit - limit
             let cnt = 0
-            if (name && name !== 'All'){
+            if (name && name !== 'All') {
                 let r = await Promise.all([
                     sequelize.query(`SELECT a.id,a.type,a.entity as name,a.cnt as count, b.name as typeName FROM entities a
                         left join entities_types b on a.type = b.type
@@ -62,10 +29,10 @@ left join entities b on a.id = b.id  `,
                         limit ${limit} offset ${offset}`,
                         {type: QueryTypes.SELECT, replacements: [name],}),
                     sequelize.query(`SELECT count(*) as cnt FROM entities where type = ? and show_list=1 
-                        and cnt is not null and cnt>15`,{type: QueryTypes.SELECT, replacements: [name],})
+                        and cnt is not null and cnt>15`, {type: QueryTypes.SELECT, replacements: [name],})
                 ])
-                result = {rows:r[0],count:r[1][0].cnt}
-            }else{
+                result = {rows: r[0], count: r[1][0].cnt}
+            } else {
                 let r = await Promise.all([
                     sequelize.query(`SELECT a.id,a.type,a.entity as name,a.cnt as count, b.name as typeName FROM entities a
                         left join entities_types b on a.type = b.type
@@ -74,23 +41,21 @@ left join entities b on a.id = b.id  `,
                         {type: QueryTypes.SELECT}),
                     sequelize.query(`SELECT count(*) as cnt FROM entities a
                     inner join entities_types b on a.type = b.type
-                    where show_list=1 and cnt>15 and b.show=1 and cnt is not null`,{type: QueryTypes.SELECT})
+                    where show_list=1 and cnt>15 and b.show=1 and cnt is not null`, {type: QueryTypes.SELECT})
                 ])
-                result = {rows:r[0],count:r[1][0].cnt}
+                result = {rows: r[0], count: r[1][0].cnt}
             }
-            //console.log('cnt',cnt)
-            //result = {rows:entities,count:cnt.cnt}
         }
         return res.json(result)
     }
-    async getAllTypes(req,res){
+
+    async getAllTypes(req, res) {
         let {searchType, name} = req.query
         let entitiesTypes = {}
         let limit = 30
-        if (searchType === 'All'){
-            entitiesTypes = await sequelize.query("SELECT * FROM twitter.entities_types where `show`=1 order by count desc", { type: QueryTypes.SELECT })
-        }
-        else if (searchType === 'One' && name) {
+        if (searchType === 'All') {
+            entitiesTypes = await sequelize.query("SELECT * FROM twitter.entities_types where `show`=1 order by count desc", {type: QueryTypes.SELECT})
+        } else if (searchType === 'One' && name) {
             console.log('need one entity', name)
             entitiesTypes = await sequelize.query(`
                 SELECT a.entityId as id,b.entity as name,b.type, count(a.entityId) as count
@@ -108,4 +73,5 @@ left join entities b on a.id = b.id  `,
         return res.json(entitiesTypes)
     }
 }
+
 module.exports = new EntityController()

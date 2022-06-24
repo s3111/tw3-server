@@ -1,12 +1,9 @@
-//const {Tweet, Entity} = require('../models/models')
-//const ApiError = require('../error/apiError')
-//const moment = require('moment')
-const { Op, QueryTypes } = require('sequelize')
+const {QueryTypes} = require('sequelize')
 const sequelize = require('../db')
 
-class TweetController{
-    async getAll(req,res){
-        let {entity,limit,page,searchType,verified} = req.query
+class TweetController {
+    async getAll(req, res) {
+        let {entity, limit, page, searchType, verified} = req.query
         page = parseInt(page) || 1
         limit = parseInt(limit) || 20
         verified = parseInt(verified) || 0
@@ -17,86 +14,30 @@ class TweetController{
             verifiedSql1 = 'and b.user_verified=1'
             verifiedSql2 = 'and b.user_verified=1'
         }
-        console.log('verifiedSql1',verifiedSql1)
+        console.log('verifiedSql1', verifiedSql1)
         let offset = page * limit - limit
         let tweets
         let count = 0
         let result
-        /*
-        if (searchType === 'All'){
-            entity = parseInt(entity) || 0
-            if(entity){
-                let r = await Promise.all([
-
-                    sequelize.query(`SELECT b.*, c.name,c.screen_name,c.profile_image_url_https
-                        FROM tweet_entities a, tweets b
-                        left join tweet_users c on b.user_id = c.tw_id
-                        where a.tweetId = b.tw_id and a.entityId =  ${entity}
-                        order by b.tw_id desc
-                        limit ${limit} offset ${offset}`,
-                    { type: QueryTypes.SELECT }),
-
-                    sequelize.query(`SELECT count(*) as cnt
-                        FROM tweet_entities where entityId = ${entity}`,
-                    { type: QueryTypes.SELECT })
-                ])
-                //console.log('cnt',cnt)
-                //count = cnt.cnt
-                result = {rows:r[0],count:r[1][0].cnt}
-            }
-            else{
-                let r = await Promise.all([
-                    sequelize.query(`SELECT *, c.name,c.screen_name,c.profile_image_url_https
-                        from tweets a 
-                        left join tweet_users c on a.user_id = c.tw_id
-                        order by a.tw_id desc
-                        limit ${limit} offset ${offset}`,
-                    { type: QueryTypes.SELECT }),
-                    sequelize.query(`SELECT count(*) as cnt from tweets`,
-                    { type: QueryTypes.SELECT })
-                ])
-                //count = cnt.cnt
-                result = {rows:r[0],count:r[1][0].cnt}
-            }
-        }
-
-        */
-        if (searchType === 'Person'){
+        if (searchType === 'Person') {
             console.log()
             let person_id = entity
-            if(person_id){
+            if (person_id) {
                 let r = await Promise.all([
                     sequelize.query(`SELECT * FROM twitter.tweets where user_id=?
                         order by tw_id desc
                         limit ${limit} offset ${offset}`,
-                        { type: QueryTypes.SELECT,replacements: [person_id] }),
+                        {type: QueryTypes.SELECT, replacements: [person_id]}),
                     sequelize.query(`SELECT count(*) as cnt
                         FROM twitter.tweets where user_id=?`,
-                        { type: QueryTypes.SELECT,replacements: [person_id] })
+                        {type: QueryTypes.SELECT, replacements: [person_id]})
                 ])
-                //console.log('cnt',cnt)
-                //count = cnt.cnt
-                result = {rows:r[0],count:r[1][0].cnt}
-            }else{
-                /*
-                let r = await Promise.all([
-                    sequelize.query(`SELECT *, c.name,c.screen_name,c.profile_image_url_https
-                        from tweets a
-                        left join tweet_users c on a.user_id = c.tw_id
-                        order by a.tw_id desc
-                        limit ${limit} offset ${offset}`,
-                        { type: QueryTypes.SELECT }),
-                    sequelize.query(`SELECT count(*) as cnt from tweets`,
-                        { type: QueryTypes.SELECT })
-                ])
-
-                 */
-                //count = cnt.cnt
-                result = {rows:[],count:0}
+                result = {rows: r[0], count: r[1][0].cnt}
+            } else {
+                result = {rows: [], count: 0}
             }
-        }
-        else if (searchType === 'Entity'){
-            if(entity && entity !== 'All'){
+        } else if (searchType === 'Entity') {
+            if (entity && entity !== 'All') {
                 let r = await Promise.all([
                     sequelize.query(`select b.* , c.name, c.screen_name, c.profile_image_url_https
                         from (SELECT b.* FROM tweet_entities a, tweets b
@@ -111,12 +52,10 @@ class TweetController{
                         where a.tweetId = b.tw_id ${verifiedSql2}  and
                         a.entityId = (SELECT id FROM twitter.entities
                         where entity = ? limit 1)`,
-                        { type: QueryTypes.SELECT, replacements: [entity]})
-
+                        {type: QueryTypes.SELECT, replacements: [entity]})
                 ])
-                result = {rows:r[0],count:r[1][0].cnt}
-            }
-            else{
+                result = {rows: r[0], count: r[1][0].cnt}
+            } else {
                 let r = await Promise.all([
                     sequelize.query(`SELECT b.*, c.name,c.screen_name,c.profile_image_url_https
                         from tweets b 
@@ -124,16 +63,15 @@ class TweetController{
                         where 1=1 ${verifiedSql1}
                         order by b.tw_id desc
                         limit ${limit} offset ${offset}`,
-                        { type: QueryTypes.SELECT }),
+                        {type: QueryTypes.SELECT}),
                     sequelize.query(`SELECT count(*) as cnt from tweets b where 1=1 ${verifiedSql2}`,
-                        { type: QueryTypes.SELECT })
+                        {type: QueryTypes.SELECT})
                 ])
-                //count = cnt.cnt
-                result = {rows:r[0],count:r[1][0].cnt}
+                result = {rows: r[0], count: r[1][0].cnt}
             }
         }
-        //console.log(result)
         return res.json(result)
     }
 }
+
 module.exports = new TweetController()

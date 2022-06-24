@@ -3,7 +3,7 @@ const sequelize = require('../db')
 
 class StatController {
     async getAll(req, res) {
-        let {searchType, name, page, limit} = req.query
+        //let {searchType, name, page, limit} = req.query
         let result = await Promise.all([
             sequelize.query(`select count(*) as cnt from tweets`, {type: QueryTypes.SELECT}),
             sequelize.query(`select count(*) as cnt from tweet_users`, {type: QueryTypes.SELECT}),
@@ -25,7 +25,7 @@ class StatController {
     }
 
     async getReport(req, res) {
-        let {searchType, name, page, limit} = req.query
+        //let {searchType, name, page, limit} = req.query
         let rows = await sequelize.query(`SELECT a.id,a.entityId,b.entity,b.type,a.countTotal,a.countCurrent,a.countTweets,date_format(date,"%Y-%m-%d") as date
             FROM statistic_entities a
             left join entities b on a.entityId = b.id
@@ -69,8 +69,9 @@ class StatController {
         }
         return res.json(result)
     }
+
     async getTopEntities(req, res) {
-        let {searchType, name, page, limit} = req.query
+        //let {searchType, name, page, limit} = req.query
         let rows = await sequelize.query(`select a.entityId, a.avgWeight, a.countCurrent, b.entityWeight, b.entityWeight/a.avgWeight as weightIndex, c.entity, c.type from
             (SELECT entityId,max(date) as max_date, round(avg(entityWeight)) as avgWeight,countCurrent
             FROM statistic_entities
@@ -87,13 +88,3 @@ class StatController {
 
 module.exports = new StatController()
 
-/*
-function median(data) {
-    data.sort((a, b) => a - b);
-    if (data.length % 2) {
-        return data[Math.floor(data.length / 2)];
-    } else {
-        return (data[data.length / 2] + data[data.length / 2 - 1]) / 2;
-    }
-}
-*/

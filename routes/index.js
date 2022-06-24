@@ -1,38 +1,13 @@
 const Router = require('express')
 const router = new Router()
-const userRouter = require('./userRoutes')
-const serverRouter = require('./serverRoutes')
-const elephantRouter = require('./elephantRoutes')
-const cropperRouter = require('./croppersRoutes')
-const botRouter = require('./botRoutes')
-const accRouter = require('./accRoutes')
-const oasesRouter = require('./oasesRoutes')
-const newsRouter = require('./newsRoutes')
 
 const entityRouter = require('./entityRouter')
 const tweetRouter = require('./tweetRouter')
 const personRouter = require('./personRoutes')
 const statRouter = require('./statRoutes')
 
-router.use('/user', userRouter)
-router.use('/server', serverRouter)
-router.use('/elephant', elephantRouter)
-router.use('/croppers', cropperRouter)
-router.use('/bot', botRouter)
-router.use('/acc', accRouter)
-router.use('/oases', oasesRouter)
-router.use('/news', newsRouter)
-
 router.use('/entity', entityRouter)
 router.use('/tweet', tweetRouter)
 router.use('/person', personRouter)
 router.use('/stat', statRouter)
 module.exports = router
-
-//const deviceRouter = require('./deviceRoutes')
-//const brandRouter = require('./brandRoutes')
-//const typeRouter = require('./typeRoutes')
-
-//router.use('/type',typeRouter)
-//router.use('/brand',brandRouter)
-//router.use('/device',deviceRouter)
